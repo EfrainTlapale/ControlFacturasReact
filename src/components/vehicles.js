@@ -14,30 +14,31 @@ import Title from 'grommet/components/Title'
 
 import axios from 'axios'
 
-class Providers extends Component {
+class Vehicles extends Component {
   state = {
-    providers: [],
+    vehicles: [],
     showLayer: false,
-    newProviderRfc: '',
-    newProviderDomicilio: '',
-    newProviderNombre: '',
+    newVehiclePlaca: '',
+    newVehicleModelo: '',
+    newVehicleColor: '',
     submitErrors: false
   }
 
-  fetchProviders = () => {
-    axios.get('/api/provider')
-    .then(res => {
+  fetchVehicles = () => {
+    axios.get('/api/vehicles')
+    .then(({data}) => {
       this.setState({
-        providers: res.data
+        vehicles: data
       })
     })
+    .catch(err => console.log(err))
   }
 
   componentDidMount(){
-    this.fetchProviders()
+    this.fetchVehicles()
   }
 
-  handleNewProvider = () => {
+  handleNewVehicle = () => {
     this.setState({
       showLayer: true
     })
@@ -51,10 +52,10 @@ class Providers extends Component {
 
   handleSubmit = (e) => {
     e.preventDefault()
-    axios.post('/api/provider', {
-      rfc: this.state.newProviderRfc,
-      nombre: this.state.newProviderNombre,
-      domicilioFiscal: this.state.newProviderDomicilio
+    axios.post('/api/vehicle', {
+      placas: this.state.newVehiclePlaca,
+      modelo: this.state.newVehicleModelo,
+      color: this.state.newVehicleColor
     })
     .then(res => {
       if(res.data.errors){
@@ -66,14 +67,13 @@ class Providers extends Component {
         this.setState({
           showLayer: false
         }, () => {
-          this.fetchProviders()
+          this.fetchVehicles()
         })
       }
     })
     .catch(err => {
       console.log(err)
     })
-    console.log(this.state.newProviderRfc, this.state.newProviderDomicilio, this.state.newProviderNombre)
   }
 
   hanldeInputChange = (e) => {
@@ -91,14 +91,14 @@ class Providers extends Component {
               <Header>
                 <Heading>Nuevo Proveedor</Heading>
               </Header>
-              <FormField label='RFC'>
-                <TextInput name='newProviderRfc' onDOMChange={this.hanldeInputChange}/>
+              <FormField label='Placas'>
+                <TextInput name='newVehiclePlaca' onDOMChange={this.hanldeInputChange}/>
               </FormField>
-              <FormField label='Nombre'>
-                <TextInput name='newProviderNombre' onDOMChange={this.hanldeInputChange}/>
+              <FormField label='Modelo'>
+                <TextInput name='newVehicleModelo' onDOMChange={this.hanldeInputChange}/>
               </FormField>
-              <FormField label='Domicilio Fiscal'>
-                <TextInput name='newProviderDomicilio' onDOMChange={this.hanldeInputChange}/>
+              <FormField label='Color'>
+                <TextInput name='newVehicleColor' onDOMChange={this.hanldeInputChange}/>
               </FormField>
               <Footer>
                 <Button type='submit' label='Guardar' onClick={this.handleSubmit}/>
@@ -107,29 +107,29 @@ class Providers extends Component {
             </Form>
           </Layer>
         }
-        <Heading>Proveedores</Heading>
-        <Button label='agregar proveedor' onClick={this.handleNewProvider}/>
+        <Heading>Vehículos</Heading>
+        <Button label='Agregar Vehículo' onClick={this.handleNewVehicle}/>
         <Table>
           <thead>
             <tr>
               <th>
-                RFC
+                Placas
               </th>
               <th>
-                Nombre
+                Modelos
               </th>
               <th>
-                Domicilio Fiscal
+                Color
               </th>
             </tr>
           </thead>
           <tbody>
-            {this.state.providers.map((provider) => {
+            {this.state.vehicles.map((vehicle) => {
               return(
-                <TableRow key={provider._id}>
-                  <td>{provider.rfc}</td>
-                  <td>{provider.nombre}</td>
-                  <td>{provider.domicilioFiscal}</td>
+                <TableRow key={vehicle._id}>
+                  <td>{vehicle.placas}</td>
+                  <td>{vehicle.modelo}</td>
+                  <td>{vehicle.color}</td>
                 </TableRow>
               )
             })}
@@ -140,4 +140,4 @@ class Providers extends Component {
   }
 }
 
-export default Providers
+export default Vehicles

@@ -4,16 +4,29 @@ import TableRow from 'grommet/components/TableRow'
 import Heading from 'grommet/components/Heading'
 import Box from 'grommet/components/Box'
 
+import {Link} from 'react-router-dom'
 
-const allBills = [
-  {id: 192192, proveedor: 'Empresa1', importe: 9243943},
-  {id: 192192, proveedor: 'Empresa2', importe: 9243943},
-  {id: 192192, proveedor: 'Empresa3', importe: 9243943},
-  {id: 192192, proveedor: 'Empresa4', importe: 9243943},
-  {id: 192192, proveedor: 'Empresa5', importe: 9243943}
-]
+import axios from 'axios'
+import numeral from 'numeral'
+import moment from 'moment'
+moment.locale('es')
 
 class Bills extends Component {
+  state = {
+    bills: [],
+    error: false
+  }
+  componentDidMount() {
+    axios.get('/api/bill')
+    .then(({data}) => {
+      this.setState(() => ({bills: data}))
+    })
+    .catch(err => {
+      this.setState({
+        error: true
+      })
+    })
+  }
   render(){
     return( 
       <Box align='center'>
@@ -22,23 +35,31 @@ class Bills extends Component {
           <thead>
             <tr>
               <th>
-                Folio
-              </th>
-              <th>
                 Proveedor
               </th>
               <th>
-                Importe
+                Total
+              </th>
+              <th>
+                Fecha
+              </th>
+              <th>
+                Vehículo
+              </th>
+              <th>
+                Detalles
               </th>
             </tr>
           </thead>
           <tbody>
-            {allBills.map((bill) => {
+            {this.state.bills.map((bill) => {
               return(
-                <TableRow>
-                  <td>{bill.id}</td>
-                  <td>{bill.proveedor}</td>
-                  <td>{bill.importe}</td>
+                <TableRow key={bill._id}>
+                  {bill.provider ? <td>{bill.provider.nombre}</td>: <td>Ninguno</td>}
+                  <td>${numeral(bill.total).format('0,0')}</td>
+                  <td>{moment(bill.date).format('LL')}</td>
+                  <td>{bill.vehicle ? `${bill.vehicle.modelo} ${bill.vehicle.color} ${bill.vehicle.placas}` : 'No aplica'}</td>
+                  <td><Link to={'/factura/' + bill._id} style={{textDecoration: 'none', color: 'white'}}><Box colorIndex='brand' align='center' style={{borderRadius: '10px'}}>Ver Detalles</Box></Link></td>
                 </TableRow>
               )
             })}

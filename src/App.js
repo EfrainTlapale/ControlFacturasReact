@@ -1,30 +1,27 @@
 import React, {Component} from 'react';
+
 import App from 'grommet/components/App';
-import Title from 'grommet/components/Title';
 import Sidebar from 'grommet/components/Sidebar';
 import Header from 'grommet/components/Header'
 import Menu from 'grommet/components/Menu'
 import Box from 'grommet/components/Box'
 import Anchor from 'grommet/components/Anchor'
 import Footer from 'grommet/components/Footer'
-import Button from 'grommet/components/Button'
 import Split from 'grommet/components/Split'
-import Headline from 'grommet/components/Headline'
-import Value from 'grommet/components/Value'
-import Label from 'grommet/components/Label'
-import Meter from 'grommet/components/Meter'
 import Paragraph from 'grommet/components/Paragraph'
 import Moment from 'moment';
 
 Moment.locale('es')
 
-//Router 
+//Router
 import {BrowserRouter as Router, Route, NavLink} from 'react-router-dom'
 import Main from './components/main'
 import Bills from './components/bills'
 import NewBill from './components/newBill'
 import Providers from './components/providers'
 import Login from './components/login'
+import Vehicles from './components/vehicles'
+import ViewBill from './components/viewBill'
 
 const navTextStyle = {
   color: 'white',
@@ -46,6 +43,13 @@ export default class AppReact extends Component {
   handleLogin = () => {
     this.setState({
       loggedIn: !this.state.loggedIn
+    })
+  }
+
+  handleLogOut = () => {
+    localStorage.removeItem('jwt')
+    this.setState({
+      loggedIn: false
     })
   }
 
@@ -77,7 +81,10 @@ export default class AppReact extends Component {
                   <NavLink exact to='/proveedores' style={navTextStyle}>
                       <span>Proveedores</span>
                   </NavLink>
-                  <Anchor onClick={this.handleLogin}>
+                  <NavLink exact to='/vehiculos' style={navTextStyle}>
+                      <span>Vehículos</span>
+                  </NavLink>
+                  <Anchor onClick={this.handleLogOut}>
                     Salir
                   </Anchor>
                 </Menu>
@@ -97,6 +104,8 @@ export default class AppReact extends Component {
               <Route exact path='/consulta' component={Bills}></Route>
               <Route exact path='/alta' component={NewBill}></Route>
               <Route exact path='/proveedores' component={Providers} />
+              <Route exact path='/vehiculos' component={Vehicles} />
+              <Route path='/factura/:id' component={ViewBill} />
             </Box>
           </Split>
         </App>

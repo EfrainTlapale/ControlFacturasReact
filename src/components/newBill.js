@@ -2,7 +2,6 @@ import React, {Component} from 'react'
 
 import Form from 'grommet/components/Form'
 import Heading from 'grommet/components/Heading'
-import Header from 'grommet/components/Header'
 import FormField from 'grommet/components/FormField'
 import Footer from 'grommet/components/Footer'
 import Button from 'grommet/components/Button'
@@ -13,31 +12,72 @@ import Columns from 'grommet/components/Columns'
 import Title from 'grommet/components/Title'
 import NumberInput from 'grommet/components/NumberInput'
 import DateTime from 'grommet/components/DateTime'
+import Toast from 'grommet/components/Toast'
+import CloseIcon from 'grommet/components/icons/base/Close'
+import Checkbox from 'grommet/components/CheckBox'
 
 import {Prompt} from 'react-router-dom'
+import axios from 'axios'
 
 class NewBill extends Component {
   state = {
     modified: false,
     date: '',
-    selectOption: '',
+    selectedProvider: '',
     provider: '',
+    providerID: '',
+    selectedVehicle: '',
+    vehicleID: '',
     concepts: [
       {id: 1, units: 0, unitType: '', description: '', unitPrice: 0, total: 0}
-    ]
+    ],
+    providerOptions: [],
+    vehicleOptions: [],
+    showToast: false,
+    toastStatus: 'ok',
+    toastMessage: 'Guardado con éxito',
+    isForVehicle: false
   }
-  handleSelect = ({option}) => {
+
+  componentDidMount(){
+    this.fetchProviders()
+    this.fetchVehicles()
+  }
+
+  handleProviderSelect = ({option}) => {
+    const id = this.state.providerOptions.find(opt => {
+      return opt.nombre === option
+    })._id
     this.setState({
-      selectOption: option,
+      providerID: id,
+      selectedProvider: option,
       provider: option  
+    })
+  }
+  handleVehicleSelect = ({option}) => {
+    const id = this.state.vehicleOptions.find(opt => {
+      return `${opt.modelo} ${opt.color} ${opt.placas}` === option
+    })._id
+    this.setState({
+      vehicleID: id,
+      selectedVehicle: option
     })
   }
 
   handleNewConcept = () => {
-    const newField = this.state.concepts.concat([{id: this.state.concepts.length + 1 , units: 0, unitType: '', description: '', unitPrice: 0, total: 0}])
-    this.setState({
-      concepts: newField
-    })  
+    const lenght = this.state.concepts.length
+    let id = 0
+    if (lenght === 0) {
+      id = 1
+    } else {
+      id = this.state.concepts[lenght-1].id
+    }
+    const newField = this.state.concepts.concat([{id: id + 1 , units: 0, unitType: '', description: '', unitPrice: 0, total: 0}])
+    this.setState(() => ({concepts: newField}))
+  }
+
+  handleRemoveConcept = (conceptId) => {
+    this.setState(prevState => ({concepts: prevState.concepts.filter(con => con.id !== conceptId)}))
   }
 
   hanldeInputChange = (e) => {
@@ -55,17 +95,100 @@ class NewBill extends Component {
   }
 
   logDate = (e) => {
-    console.log(e)
     this.setState({
       date: e
     })
   }
 
+  fetchProviders = () => {
+    axios.get('/api/provider')
+    .then(({data}) => {
+      this.setState({
+        providerOptions: data
+      })
+    })
+  }
+
+  fetchVehicles = () => {
+    axios.get('/api/vehicles')
+    .then(({data}) => {
+      this.setState({
+        vehicleOptions: data
+      })
+    })
+  }
+
+  handleSubmit = (e) => {
+    e.preventDefault()
+    const data = {
+      provider: this.state.providerID,
+      concepts: this.state.concepts,
+      total: this.getTotal(),
+      date: new Date(this.state.date)
+    }
+    const newData = Object.assign(data, this.state.isForVehicle ? {vehicle: this.state.vehicleID}: null)
+    axios.post( '/api/bill',newData)
+    .then(res => {
+      if(res.data.errors) {
+        this.setState({
+          toastStatus: 'critical',
+          toastMessage: 'Error al guardar factura, por favor verifique los datos',
+          showToast: true
+        })
+      } else {
+        this.setState({
+          toastStatus: 'ok',
+          toastMessage: 'Guardado con éxito',
+          showToast: true,
+          modified: false,
+          date: '',
+          selectedOption: '',
+          provider: '',
+          providerID: '',
+          concepts: [
+            {id: 1, units: 0, unitType: '', description: '', unitPrice: 0, total: 0}
+          ]
+        })
+      }
+    })
+    .catch(err => {
+      this.setState({
+        toastStatus: 'critical',
+        toastMessage: 'Error en la aplicación',
+        showToast: true
+      })
+    })
+  }
+
+  handleToastClose = () => {
+    this.setState({
+      showToast: false
+    })
+  }
+
+  handleCheckBox = () => {
+    this.setState(({isForVehicle}) => ({isForVehicle: !isForVehicle}))
+  }
+
+  getTotal = () => {
+    const total = this.state.concepts.reduce((total, concept) => {
+      return total + (concept.unitPrice * concept.units)
+    }, 0)
+    return total
+  }
+
   render(){
     const fields = this.state.concepts.map(fieldSet => {
       return (
-        <div> 
-          <Title>{'Concepto ' + fieldSet.id}</Title>
+        <div key={fieldSet.id}> 
+          <Columns size={'small'} justify='between'>
+            <Title>{'Concepto '}</Title>
+            <Box align='end'>
+              <Button onClick={() => this.handleRemoveConcept(fieldSet.id)}>
+                <CloseIcon />
+              </Button>
+            </Box>
+          </Columns>
           <br/>
           <Columns size={'small'} justify='between' >
             <FormField label='Cantidad' >
@@ -87,12 +210,10 @@ class NewBill extends Component {
         </div>
       )
     })
-    const total = this.state.concepts.reduce((total, concept) => {
-      return total + (concept.unitPrice * concept.units)
-    }, 0)
+
     return(
       <Box align='center'> 
-
+        {this.state.showToast && <Toast status={this.state.toastStatus} onClose={this.handleToastClose}>{this.state.toastMessage}</Toast>}
         <Prompt message='No se han guardado los cambios, ¿seguro que desea salir?' when={this.state.modified}/>
         <Form>
             <Heading align='center'>
@@ -100,21 +221,29 @@ class NewBill extends Component {
             </Heading>
             <br/>
           <FormField label='Proveedor'>
-            <Select options={['proveedor 1', 'proveedor 2']} value={this.state.selectOption} onChange={this.handleSelect} />
+            <Select options={this.state.providerOptions.map(opt => opt.nombre)} value={this.state.selectedProvider} onChange={this.handleProviderSelect} />
           </FormField>
           <FormField label='Fecha'>
-            <DateTime format='D/M/YYYY' onChange={this.logDate} value={this.state.date}/>
+            <DateTime format='M/D/YYYY' onChange={this.logDate} value={this.state.date}/>
           </FormField>
+          <FormField>
+            <Checkbox label='Pertenece a Vehículo' checked={this.state.isForVehicle} onChange={this.handleCheckBox}/>
+          </FormField>
+          { this.state.isForVehicle && 
+            <FormField label='Vehículo'>
+              <Select disabled={true} options={this.state.vehicleOptions.map(opt => `${opt.modelo} ${opt.color} ${opt.placas}`)} value={this.state.selectedVehicle} onChange={this.handleVehicleSelect} />
+            </FormField>
+          }
           <br/>
           {fields}
           <Button onClick={this.handleNewConcept} label='Agregar Concepto' />
           <br/><br/>
-          <Title>{'Total: ' + total}</Title>
+          <Title>{'Total: ' + this.getTotal()}</Title>
           <Footer pad={{"vertical": "medium"}}>
             <Button label='Guardar'
               type='submit'
               primary={true}
-              onClick={(e) => {e.preventDefault();console.log(this.state.provider)}}
+              onClick={this.handleSubmit}
             />
           </Footer>
         </Form>
