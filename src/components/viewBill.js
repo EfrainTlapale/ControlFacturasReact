@@ -40,7 +40,7 @@ class ViewBill extends Component {
   render() {
     return (
       <Box margin='large'>
-        {!this.state ? <h3>Cargando</h3>:
+        {this.state.loading ? <h3>Cargando</h3>:
         <div>
         <Heading align='center'>Factura</Heading>
         <Heading align='center' tag='h3'>{moment(this.state.date).format('LL')}</Heading>

@@ -38,7 +38,8 @@ const loggedin = () => {
 export default class AppReact extends Component {
   state = {
     mainActive: true,
-    loggedIn: loggedin()
+    loggedIn: loggedin(),
+    margin: 240
   }
 
   handleLogin = () => {
@@ -62,8 +63,8 @@ export default class AppReact extends Component {
       this.state.loggedIn ? 
       <Router>
         <App centered={false} lang='es' >
-          <Split flex='right'>
-            <Sidebar colorIndex='neutral-2-a' fixed={false} size='small'>
+          <Split flex='right' fixed={false} onResponsive={(col) => col === 'multiple' ? this.setState(() => ({margin: 240})) : this.setState(() => ({margin: 0})) }>
+            <Sidebar style={{position: 'fixed'}} colorIndex='neutral-2-a' fixed size='small'>
               <Header pad='medium'>
                 <b><h2>Control de Facturas</h2></b>
               </Header>
@@ -100,7 +101,7 @@ export default class AppReact extends Component {
                 </Box>
               </Footer>
             </Sidebar>
-            <Box>
+            <Box style={{marginLeft: this.state.margin + 'px'}}>
               <Route exact path='/' component={Main}/>
               <Route exact path='/consulta' component={Bills}/>
               <Route exact path='/alta' component={NewBill} />
