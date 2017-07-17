@@ -36,7 +36,7 @@ class ViewBill extends Component {
      })
      .catch(err => console.log(err))
    }
-
+  
   render() {
     return (
       <Box margin='large'>
