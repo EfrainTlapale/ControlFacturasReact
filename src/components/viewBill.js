@@ -8,6 +8,7 @@ import Tile from 'grommet/components/Tile'
 import axios from 'axios' 
 import moment from 'moment'
 import numeral from 'numeral'
+import {Link} from 'react-router-dom'
 
 class ViewBill extends Component {
   state = {
@@ -15,27 +16,32 @@ class ViewBill extends Component {
     date: '',
     provider: {},
     total: 0,
-    vehicle: {}
+    vehicle: {},
+    loading: true
    }
-   componentDidMount() {
+   componentWillMount() {
      const url = '/api/bill/' + this.props.match.params.id
      axios.get(url)
      .then(({data}) => {
-       console.log(data)
-       this.setState(
-         {
-           concepts: data.concepts,
-           date: data.date,
-           provider: data.provider,
-           total: data.total,
-           vehicle: data.vehicle
-         })
+       this.setState(() =>
+       ({
+          concepts: data.concepts,
+          date: data.date,
+          provider: data.provider,
+          total: data.total,
+          vehicle: data.vehicle,
+          loading: false
+        })
+      )
      })
      .catch(err => console.log(err))
    }
+
   render() {
     return (
       <Box margin='large'>
+        {!this.state ? <h3>Cargando</h3>:
+        <div>
         <Heading align='center'>Factura</Heading>
         <Heading align='center' tag='h3'>{moment(this.state.date).format('LL')}</Heading>
         <br/>
@@ -62,6 +68,9 @@ class ViewBill extends Component {
             </Tile>
           ))}
         </Tiles>
+        <Link to={'/editarfactura/' + this.props.match.params.id} style={{textDecoration: 'none', color: 'white'}}><Box colorIndex='brand' align='center' style={{borderRadius: '10px'}}>Editar</Box></Link>
+        </div>
+        }
       </Box>
     )
   }

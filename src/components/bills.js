@@ -61,7 +61,7 @@ class Bills extends Component {
                   <td>{bill.vehicle ? `${bill.vehicle.modelo} ${bill.vehicle.color} ${bill.vehicle.placas}` : 'No aplica'}</td>
                   <td><Link to={'/factura/' + bill._id} style={{textDecoration: 'none', color: 'white'}}><Box colorIndex='brand' align='center' style={{borderRadius: '10px'}}>Ver Detalles</Box></Link></td>
                 </TableRow>
-              )
+              ) 
             })}
           </tbody>
         </Table>

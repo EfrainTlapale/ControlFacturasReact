@@ -22,6 +22,7 @@ import Providers from './components/providers'
 import Login from './components/login'
 import Vehicles from './components/vehicles'
 import ViewBill from './components/viewBill'
+import EditBill from './components/editBill'
 
 const navTextStyle = {
   color: 'white',
@@ -62,7 +63,7 @@ export default class AppReact extends Component {
       <Router>
         <App centered={false} lang='es' >
           <Split flex='right'>
-            <Sidebar colorIndex='neutral-2-a' fixed={true} size='small'>
+            <Sidebar colorIndex='neutral-2-a' fixed={false} size='small'>
               <Header pad='medium'>
                 <b><h2>Control de Facturas</h2></b>
               </Header>
@@ -101,11 +102,12 @@ export default class AppReact extends Component {
             </Sidebar>
             <Box>
               <Route exact path='/' component={Main}/>
-              <Route exact path='/consulta' component={Bills}></Route>
-              <Route exact path='/alta' component={NewBill}></Route>
+              <Route exact path='/consulta' component={Bills}/>
+              <Route exact path='/alta' component={NewBill} />
               <Route exact path='/proveedores' component={Providers} />
               <Route exact path='/vehiculos' component={Vehicles} />
               <Route path='/factura/:id' component={ViewBill} />
+              <Route path='/editarFactura/:id' component={EditBill} />
             </Box>
           </Split>
         </App>
