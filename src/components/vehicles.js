@@ -18,10 +18,12 @@ class Vehicles extends Component {
   state = {
     vehicles: [],
     showLayer: false,
-    newVehiclePlaca: '',
-    newVehicleModelo: '',
-    newVehicleColor: '',
-    submitErrors: false
+    vehiclePlaca: '',
+    vehicleModelo: '',
+    vehicleColor: '',
+    submitErrors: false,
+    layerMode: 'new',
+    vehicleId: ''
   }
 
   fetchVehicles = () => {
@@ -46,34 +48,66 @@ class Vehicles extends Component {
 
   handleLayerClose = () => {
     this.setState({
-      showLayer: false
+      showLayer: false,
+      layerMode: 'new',
+      vehiclePlaca: '',
+      vehicleModelo: '',
+      vehicleColor: '',
+      vehicleId: ''
     })
   }
 
   handleSubmit = (e) => {
     e.preventDefault()
-    axios.post('/api/vehicle', {
-      placas: this.state.newVehiclePlaca,
-      modelo: this.state.newVehicleModelo,
-      color: this.state.newVehicleColor
-    })
-    .then(res => {
-      if(res.data.errors){
-        console.log(res.data.errors)
-        this.setState({
-          submitErrors: true
-        })
-      } else {
-        this.setState({
-          showLayer: false
-        }, () => {
-          this.fetchVehicles()
-        })
-      }
-    })
-    .catch(err => {
-      console.log(err)
-    })
+    const data = {
+      placas: this.state.vehiclePlaca,
+      modelo: this.state.vehicleModelo,
+      color: this.state.vehicleColor
+    }
+    if(this.state.layerMode === 'new') {
+      axios.post('/api/vehicle', data)
+      .then(res => {
+        if(res.data.errors){
+          console.log(res.data.errors)
+          this.setState({
+            submitErrors: true
+          })
+        } else {
+          this.setState({
+            showLayer: false
+          }, () => {
+            this.fetchVehicles()
+          })
+        }
+      })
+      .catch(err => {
+        console.log(err)
+      })
+    } else {
+      axios.put('/api/vehicle/' + this.state.vehicleId, data)
+      .then(res => {
+        if(res.data.errors){
+          console.log(res.data.errors)
+          this.setState({
+            submitErrors: true
+          })
+        } else {
+          this.setState({
+            showLayer: false,
+            layerMode: 'new',
+            vehiclePlaca: '',
+            vehicleModelo: '',
+            vehicleColor: '',
+            vehicleId: ''
+          }, () => {
+            this.fetchVehicles()
+          })
+        }
+      })
+      .catch(err => {
+        console.log(err)
+      })
+    }
   }
 
   hanldeInputChange = (e) => {
@@ -82,23 +116,36 @@ class Vehicles extends Component {
     })
   }
 
+  handleEdit = (vehicle) => {
+    this.setState(() => (
+      {
+        vehicleColor: vehicle.color,
+        vehicleModelo: vehicle.modelo,
+        vehiclePlaca: vehicle.placas,
+        vehicleId: vehicle._id,
+        layerMode: 'edit',
+        showLayer: true
+      }
+    ))
+  }
+
   render(){
     return(
       <Box align='center'>
         { this.state.showLayer && 
-          <Layer onClose={this.handleLayerClose}>
+          <Layer onClose={this.handleLayerClose} closer>
             <Form pad='medium'>
               <Header>
-                <Heading>Nuevo Proveedor</Heading>
+                <Heading>{this.state.layerMode === 'new' ? 'Nuevo':'Editar'} Vehículo</Heading>
               </Header>
               <FormField label='Placas'>
-                <TextInput name='newVehiclePlaca' onDOMChange={this.hanldeInputChange}/>
+                <TextInput name='vehiclePlaca' onDOMChange={this.hanldeInputChange} value={this.state.vehiclePlaca} />
               </FormField>
               <FormField label='Modelo'>
-                <TextInput name='newVehicleModelo' onDOMChange={this.hanldeInputChange}/>
+                <TextInput name='vehicleModelo' onDOMChange={this.hanldeInputChange} value={this.state.vehicleModelo}/>
               </FormField>
               <FormField label='Color'>
-                <TextInput name='newVehicleColor' onDOMChange={this.hanldeInputChange}/>
+                <TextInput name='vehicleColor' onDOMChange={this.hanldeInputChange} value={this.state.vehicleColor}/>
               </FormField>
               <Footer>
                 <Button type='submit' label='Guardar' onClick={this.handleSubmit}/>
@@ -121,6 +168,9 @@ class Vehicles extends Component {
               <th>
                 Color
               </th>
+              <th>
+                Editar
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -130,6 +180,7 @@ class Vehicles extends Component {
                   <td>{vehicle.placas}</td>
                   <td>{vehicle.modelo}</td>
                   <td>{vehicle.color}</td>
+                  <td><Button label='editar' onClick={() => this.handleEdit(vehicle) } /></td>
                 </TableRow>
               )
             })}

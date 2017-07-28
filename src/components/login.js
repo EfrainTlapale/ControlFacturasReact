@@ -4,6 +4,9 @@ import Box from 'grommet/components/Box'
 import LoginForm from 'grommet/components/LoginForm'
 import Title from 'grommet/components/Title'
 import Spinning from 'grommet/components/icons/Spinning'
+import Image from 'grommet/components/Image'
+
+import logo from '../images/LOGOTLAXGOB17.jpg'
 
 import axios from 'axios'
 
@@ -22,7 +25,7 @@ class Login extends Component{
       username,
       password
     })
-    .then((data) => {
+    .then(({data}) => {
       this.setState({
         loading: false
       })
@@ -51,7 +54,8 @@ class Login extends Component{
           }
           {this.state.error && <Title>Error al iniciar sesión</Title>}
         </Box>
-        <Box colorIndex='neutral-2-a' full={true}>
+        <Box colorIndex='neutral-2-a' full={true} style={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+          <Image src={logo} size='large' style={{margin: '0px 20px 0px 20px'}}/>
         </Box>
       </Split>
     )

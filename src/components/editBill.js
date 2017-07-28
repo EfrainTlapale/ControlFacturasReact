@@ -22,12 +22,16 @@ class EditBill extends Component {
      .catch(err => console.log(err))
   }
 
+  onSubmit = function() {
+    console.log(this.state)
+  }
+
   render() {
     return (
       <div>
         <Heading align='center'>Editar Factura</Heading>
         {this.state.loading ? <h1>Cargando...</h1>:
-          <BillForm billData={this.state.billData} onSubmit={function(){console.log(this.state)}}/>
+          <BillForm billData={this.state.billData} onSubmit={this.onSubmit}/>
         }
       </div>
     )

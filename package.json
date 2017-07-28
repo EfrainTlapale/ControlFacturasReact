@@ -51,9 +51,11 @@
   },
   "dependencies": {
     "axios": "^0.16.2",
+    "jwt-decode": "^2.2.0",
     "numeral": "^2.0.6",
     "react": "^15.4.2",
     "react-dom": "^15.4.2",
+    "react-excel-workbook": "^0.0.4",
     "react-router-dom": "^4.1.1"
   },
   "scripts": {
