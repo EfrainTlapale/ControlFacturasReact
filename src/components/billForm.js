@@ -122,7 +122,7 @@ class BillForm extends Component {
   }
 
   fetchVehicles = () => {
-    axios.get('/api/vehicles')
+    axios.get('/api/vehicle')
     .then(({data}) => {
       this.setState({
         vehicleOptions: data

@@ -53,6 +53,7 @@
     "axios": "^0.16.2",
     "jwt-decode": "^2.2.0",
     "numeral": "^2.0.6",
+    "prop-types": "^15.5.10",
     "react": "^15.4.2",
     "react-dom": "^15.4.2",
     "react-excel-workbook": "^0.0.4",

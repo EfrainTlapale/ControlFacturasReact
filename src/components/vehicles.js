@@ -27,7 +27,7 @@ class Vehicles extends Component {
   }
 
   fetchVehicles = () => {
-    axios.get('/api/vehicles')
+    axios.get('/api/vehicle')
     .then(({data}) => {
       this.setState({
         vehicles: data
