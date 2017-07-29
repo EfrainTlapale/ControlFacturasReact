@@ -25,7 +25,6 @@ import Vehicles from './components/vehicles'
 import ViewBill from './components/viewBill'
 import EditBill from './components/editBill'
 import Users from './components/users'
-import Crud from './components/crud'
 
 import decode from 'jwt-decode'
 
@@ -151,7 +150,6 @@ export default class AppReact extends Component {
               <Route path='/factura/:id' render={(props) => <ViewBill {...props} handleShowToast={(status, message) => this.handleShowToast(status, message)}/> } />
               <Route path='/editarFactura/:id' component={EditBill} />
               <PrivateRoute path='/users' component={Users} />
-              <PrivateRoute path='/crud' component={Crud} />
             </Box>
           </Split>
         </App>

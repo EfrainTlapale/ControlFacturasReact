@@ -133,7 +133,6 @@ class Crud extends Component {
       o[f] = element[f]
       return o
     }, {})
-    console.log(editData)
     this.setState(() => (
       {
         fields: editData,
@@ -142,6 +141,30 @@ class Crud extends Component {
         showLayer: true
       }
     ))
+  }
+
+  handleDelete = () => {
+    axios.delete(`/api/${this.props.resource}/${this.state.resourceId}`)
+    .then().then(res => {
+        if(res.data.errors){
+          console.log(res.data.errors)
+          this.setState({
+            submitErrors: true
+          })
+        } else {
+          this.setState({
+            showLayer: false,
+            layerMode: 'new',
+            fields: this.getCleanFields(),
+            resourceId: ''
+          }, () => {
+            this.fetchData()
+          })
+        }
+      })
+      .catch(err => {
+        console.log(err)
+      })
   }
 
   render(){
@@ -158,8 +181,10 @@ class Crud extends Component {
                   <TextInput name={f} onDOMChange={this.hanldeInputChange} value={this.state.fields[f]} />
                 </FormField>
               ))}
-              <Footer>
+              <br/>
+              <Footer justify='between'>
                 <Button type='submit' label='Guardar' onClick={this.handleSubmit}/>
+                { this.state.layerMode === 'edit' && <Button type='button' style={{borderColor: 'red', boxShadow: 'none'}} label='Eliminar' onClick={this.handleDelete}/>}
               </Footer>
               {this.state.submitErrors && <Title>Error al registrar</Title>}
             </Form>
@@ -202,13 +227,4 @@ Crud.propTypes = {
   resourceAlias: PropTypes.string
 }
 
-class TestCrud extends Component {
-  state = {  }
-  render() {
-    return (
-      <Crud resource='provider' resourceAlias='Proveedor' resourcePlural='Proveedores' fields={['rfc', 'nombre', 'domicilioFiscal']} />
-    )
-  }
-}
-
-export default TestCrud
+export default Crud

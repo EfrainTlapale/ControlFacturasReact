@@ -46,7 +46,7 @@ class BillForm extends Component {
     if(nextProps.billData){
       const {date, provider, concepts, vehicle} = nextProps.billData
       const vehicleState = vehicle ? {
-        selectedVehicle: `${vehicle.modelo} ${vehicle.color} ${vehicle.placas}`,
+        selectedVehicle: `${vehicle.Modelo} ${vehicle.Color} ${vehicle.Placas}`,
         vehicleID: vehicle._id,
         isForVehicle: true
       }:null
@@ -68,7 +68,7 @@ class BillForm extends Component {
   handleVehicleSelect = ({option}) => {
     this.checkModified()
     const id = this.state.vehicleOptions.find(opt => {
-      return `${opt.modelo} ${opt.color} ${opt.placas}` === option
+      return `${opt.Modelo} ${opt.Color} ${opt.Placas}` === option
     })._id
     this.setState({
       vehicleID: id,
@@ -149,8 +149,8 @@ class BillForm extends Component {
   }
 
   handleCheckBox = () => {
-    const {modelo, color, placas, _id} = this.state.vehicleOptions[0]
-    this.setState(({isForVehicle}) => ({isForVehicle: !isForVehicle, selectedVehicle: `${modelo} ${color} ${placas}`, vehicleID: _id}))
+    const {Modelo, Color, Placas, _id} = this.state.vehicleOptions[0]
+    this.setState(({isForVehicle}) => ({isForVehicle: !isForVehicle, selectedVehicle: `${Modelo} ${Color} ${Placas}`, vehicleID: _id}))
   }
 
   getTotal = () => {
@@ -178,7 +178,7 @@ class BillForm extends Component {
           </FormField>
           { this.state.isForVehicle && 
             <FormField label='Vehículo'>
-              <Select disabled={true} options={this.state.vehicleOptions.map(opt => `${opt.modelo} ${opt.color} ${opt.placas}`)} value={this.state.selectedVehicle} onChange={this.handleVehicleSelect} />
+              <Select disabled={true} options={this.state.vehicleOptions.map(opt => `${opt.Modelo} ${opt.Color} ${opt.Placas}`)} value={this.state.selectedVehicle} onChange={this.handleVehicleSelect} />
             </FormField>
           }
           <br/>
