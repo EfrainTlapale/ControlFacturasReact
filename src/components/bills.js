@@ -55,7 +55,7 @@ class Bills extends Component {
   }
 
   fetchVehicles = () => {
-    axios.get('/api/vehicles')
+    axios.get('/api/vehicle')
     .then(({data}) => {
       this.setState({
         vehicleOptions: data
@@ -110,7 +110,7 @@ class Bills extends Component {
   }
 
   filteredVehicleOptions = () => {
-    const options = this.state.vehicleOptions.map(opt => `${opt.modelo} ${opt.color} ${opt.placas}`)
+    const options = this.state.vehicleOptions.map(opt => `${opt.Modelo} ${opt.Color} ${opt.Placas}`)
     options.unshift('Todos')
     return options
   }
