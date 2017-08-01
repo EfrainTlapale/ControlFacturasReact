@@ -90,7 +90,7 @@ export default class AppReact extends Component {
     let role
     if(jwt){
       role =decode(jwt)._doc.role 
-      username =decode(jwt)._doc.username 
+      username =decode(jwt)._doc.nombre 
     }
     return (
       this.state.loggedIn ? 

@@ -23,20 +23,20 @@ class Bills extends Component {
   }
 
   state = {
-    bills: [],
+    facturas: [],
     error: false,
-    providerOptions: [],
-    vehicleOptions: [],
-    selectedVehicle: 'Todos',
-    selectedProvider: 'Todos',
-    date: this.getDate()
+    opcionesProveedor: [],
+    opcionesVehiculo: [],
+    vehiculoSeleccionado: 'Todos',
+    proveedorSeleccionado: 'Todos',
+    fecha: this.getDate()
   }
   componentDidMount() {
     this.fetchProviders()
     this.fetchVehicles()
-    axios.get('/api/bill')
+    axios.get('/api/factura')
     .then(({data}) => {
-      this.setState(() => ({bills: data}))
+      this.setState(() => ({facturas: data}))
     })
     .catch(err => {
       this.setState({
@@ -46,53 +46,53 @@ class Bills extends Component {
   }
 
   fetchProviders = () => {
-    axios.get('/api/provider')
+    axios.get('/api/proveedor')
     .then(({data}) => {
       this.setState({
-        providerOptions: data
+        opcionesProveedor: data
       })
     })
   }
 
   fetchVehicles = () => {
-    axios.get('/api/vehicle')
+    axios.get('/api/vehiculo')
     .then(({data}) => {
       this.setState({
-        vehicleOptions: data
+        opcionesVehiculo: data
       })
     })
   }
 
   handleProviderSelect = ({option}) => {
     this.setState({
-      selectedProvider: option
+      proveedorSeleccionado: option
     })
   }
 
   handleVehicleSelect = ({option}) => {
     this.setState({
-      selectedVehicle: option
+      vehiculoSeleccionado: option
     })
   }
 
-  filteredData = () => {
-    const bills = this.state.bills.filter(bill => {
-      const date = new Date(bill.date)
-      return `${date.getMonth()+1}/${date.getFullYear()}` === this.state.date
+  filteredFacturas = () => {
+    const facturas = this.state.facturas.filter(factura => {
+      const date = new Date(factura.fecha)
+      return `${date.getMonth()+1}/${date.getFullYear()}` === this.state.fecha
     })
-    if(this.state.selectedProvider === 'Todos' && this.state.selectedVehicle==='Todos'){
-      return bills
+    if(this.state.proveedorSeleccionado === 'Todos' && this.state.vehiculoSeleccionado==='Todos'){
+      return facturas
     } else {
-      return bills.filter(bill => {
+      return facturas.filter(factura => {
         let ok = true
-        if(this.state.selectedProvider !== 'Todos'){
-          ok = bill.provider.nombre === this.state.selectedProvider
+        if(this.state.proveedorSeleccionado !== 'Todos'){
+          ok = factura.proveedor.nombre === this.state.proveedorSeleccionado
         }
-        if(this.state.selectedVehicle !=='Todos'){
+        if(this.state.vehiculoSeleccionado !=='Todos'){
           if(ok){
-            if(bill.vehicle){
-              const vehicle = bill.vehicle
-              ok = `${vehicle.modelo} ${vehicle.color} ${vehicle.placas}` === this.state.selectedVehicle
+            if(factura.vehiculo){
+              const vehiculo = factura.vehiculo
+              ok = `${vehiculo.modelo} ${vehiculo.color} ${vehiculo.placas}` === this.state.vehiculoSeleccionado
             } else {
               ok = false
             }
@@ -103,14 +103,14 @@ class Bills extends Component {
     }
   }
 
-  filteredProviderOptions = () => {
-    const options = this.state.providerOptions.map(opt => opt.nombre)
+  filteredProveedorOptions = () => {
+    const options = this.state.opcionesProveedor.map(opt => opt.nombre)
     options.unshift('Todos')
     return options
   }
 
-  filteredVehicleOptions = () => {
-    const options = this.state.vehicleOptions.map(opt => `${opt.Modelo} ${opt.Color} ${opt.Placas}`)
+  filteredVehiculoOptions = () => {
+    const options = this.state.opcionesVehiculo.map(opt => `${opt.modelo} ${opt.color} ${opt.placas}`)
     options.unshift('Todos')
     return options
   }
@@ -125,10 +125,10 @@ class Bills extends Component {
         <Heading>Facturas</Heading>
         <Columns justify='center' size='small'>
           <FormField label='Proveedor'>
-            <Select options={this.filteredProviderOptions()} onChange={this.handleProviderSelect} value={this.state.selectedProvider} />
+            <Select options={this.filteredProveedorOptions()} onChange={this.handleProviderSelect} value={this.state.proveedorSeleccionado} />
           </FormField>
           <FormField label='Vehículo'>
-            <Select options={this.filteredVehicleOptions()} onChange={this.handleVehicleSelect} value={this.state.selectedVehicle}/>
+            <Select options={this.filteredVehiculoOptions()} onChange={this.handleVehicleSelect} value={this.state.vehiculoSeleccionado}/>
           </FormField>
           <FormField label='Mes/Año'>
             <DateTime format='M/YYYY' value={this.state.date} onChange={this.handleDate}/>
@@ -138,31 +138,39 @@ class Bills extends Component {
           <thead>
             <tr>
               <th>
-                Proveedor
-              </th>
-              <th>
-                Total
+                Folio
               </th>
               <th>
                 Fecha
               </th>
               <th>
+                Proveedor
+              </th>
+              <th>
+                Concepto
+              </th>
+              <th>
                 Vehículo
               </th>
               <th>
-                Detalles
+                Total
+              </th>
+              <th>
+                Editar
               </th>
             </tr>
           </thead>
           <tbody>
-            {this.filteredData().map((bill) => {
+            {this.filteredFacturas().map((factura) => {
               return(
-                <TableRow key={bill._id}>
-                  {bill.provider ? <td>{bill.provider.nombre}</td>: <td>Ninguno</td>}
-                  <td>${numeral(bill.total).format('0,0')}</td>
-                  <td>{moment(bill.date).format('LL')}</td>
-                  <td>{bill.vehicle ? `${bill.vehicle.modelo} ${bill.vehicle.color} ${bill.vehicle.placas}` : 'No aplica'}</td>
-                  <td><Link to={'/factura/' + bill._id} style={{textDecoration: 'none', color: 'white'}}><Box colorIndex='brand' align='center' style={{borderRadius: '10px'}}>Ver Detalles</Box></Link></td>
+                <TableRow key={factura._id}>
+                  <td>{factura.folio}</td>
+                  <td>{moment(factura.fecha).format('LL')}</td>
+                  <td>{factura.proveedor.nombre}</td>
+                  <td>{factura.concepto}</td>
+                  <td>{factura.vehiculo ? `${factura.vehiculo.modelo} ${factura.vehiculo.color} ${factura.vehiculo.placas}` : 'No aplica'}</td>
+                  <td>${numeral(factura.total).format('0,0')}</td>
+                  <td><Link to={'/editarFactura/' + factura._id} style={{textDecoration: 'none', color: 'white'}}><Box colorIndex='brand' align='center' style={{borderRadius: '10px'}}>Editar</Box></Link></td>
                 </TableRow>
               ) 
             })}

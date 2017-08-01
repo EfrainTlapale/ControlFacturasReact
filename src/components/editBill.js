@@ -1,7 +1,5 @@
 import React, { Component } from 'react'
 
-import Heading from 'grommet/components/Heading' 
-
 import axios from 'axios'
 
 import BillForm from './billForm'
@@ -13,7 +11,7 @@ class EditBill extends Component {
   }
 
   componentDidMount() {
-    const url = '/api/bill/' + this.props.match.params.id
+    const url = '/api/factura/' + this.props.match.params.id
      axios.get(url)
      .then(({data}) => {
        this.setState(() => ({loading: false}))
@@ -22,16 +20,11 @@ class EditBill extends Component {
      .catch(err => console.log(err))
   }
 
-  onSubmit = function() {
-    console.log(this.state)
-  }
-
   render() {
     return (
       <div>
-        <Heading align='center'>Editar Factura</Heading>
         {this.state.loading ? <h1>Cargando...</h1>:
-          <BillForm billData={this.state.billData} onSubmit={this.onSubmit}/>
+          <BillForm billData={this.state.billData} method='put' url='/api/factura' title='Editar Factura'/>
         }
       </div>
     )

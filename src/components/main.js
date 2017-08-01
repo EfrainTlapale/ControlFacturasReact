@@ -31,18 +31,18 @@ class Main extends Component {
   }
 
   componentDidMount() {
-    this.setState(() => ({userRole: decode(localStorage.getItem('jwt'))._doc.role}))
+    this.setState(() => ({userRole: decode(localStorage.getItem('jwt'))._doc.rol}))
     this.fetchTecho(this.state.period)
     this.getBillsFilteredTotal()
   }
 
   getBillsFilteredTotal = () => {
-    axios.get('/api/bill')
+    axios.get('/api/factura')
     .then(({data}) => {
-      const total = data.reduce((total, bill) => {
-        const date = new Date(bill.date)
+      const total = data.reduce((total, factura) => {
+        const date = new Date(factura.fecha)
         if (`${date.getMonth()+1}/${date.getFullYear()}` === this.state.period) {
-          return total + +bill.total
+          return total + +factura.total
         } else {
           return total + 0
         }

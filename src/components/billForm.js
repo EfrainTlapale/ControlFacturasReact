@@ -1,4 +1,5 @@
-import React, {Component, PropTypes} from 'react'
+import React, {Component} from 'react'
+import PropTypes from 'prop-types'
 
 import Form from 'grommet/components/Form'
 import FormField from 'grommet/components/FormField'
@@ -7,34 +8,39 @@ import Button from 'grommet/components/Button'
 import Box from 'grommet/components/Box'
 import Select from 'grommet/components/Select'
 import TextInput from 'grommet/components/TextInput'
-import Columns from 'grommet/components/Columns'
-import Title from 'grommet/components/Title'
 import NumberInput from 'grommet/components/NumberInput'
 import DateTime from 'grommet/components/DateTime'
 import Toast from 'grommet/components/Toast'
-import CloseIcon from 'grommet/components/icons/base/Close'
 import Checkbox from 'grommet/components/CheckBox'
+import Heading from 'grommet/components/Heading'
 
-import {Prompt} from 'react-router-dom'
+import SaveIcon from 'grommet/components/icons/base/Save'
+import CloseIcon from 'grommet/components/icons/base/Close'
+
+import {Prompt, Redirect} from 'react-router-dom'
 import axios from 'axios'
+import moment from 'moment'
 
 class BillForm extends Component {
   state = {
-    modified: false,
-    date: '',
-    selectedProvider: '',
-    providerID: '',
-    selectedVehicle: '',
-    vehicleID: '',
-    concepts: [
-      {id: 1, units: 0, unitType: '', description: '', unitPrice: 0, total: 0}
-    ],
-    providerOptions: [],
-    vehicleOptions: [],
+    redirect: false,
+    modificado: false,
+    folio: '',
+    fecha: '',
+    proveedorSelecionado: '',
+    idProveedor: '',
+    vehiculoSeleccionado: '',
+    idVehiculo: '',
+    refacciones: '',
+    concepto: '',
+    opcionesProveedor: [],
+    opcionesVehiculo: [],
+    total: 0,
     showToast: false,
     toastStatus: 'ok',
     toastMessage: 'Guardado con éxito',
-    isForVehicle: false
+    isForVehiculo: false,
+    isForAlimentos: false
   }
 
   componentDidMount(){
@@ -44,63 +50,42 @@ class BillForm extends Component {
   
   componentWillReceiveProps(nextProps) {
     if(nextProps.billData){
-      const {date, provider, concepts, vehicle} = nextProps.billData
-      const vehicleState = vehicle ? {
-        selectedVehicle: `${vehicle.Modelo} ${vehicle.Color} ${vehicle.Placas}`,
-        vehicleID: vehicle._id,
-        isForVehicle: true
+      const {folio, fecha, proveedor, concepto, vehiculo, total} = nextProps.billData
+      const vehicleState = vehiculo ? {
+        vehiculoSeleccionado: `${vehiculo.modelo} ${vehiculo.color} ${vehiculo.placas}`,
+        idVehiculo: vehiculo._id,
+        isForVehiculo: true
       }:null
-      const state = Object.assign({date, selectedProvider: provider.nombre, providerID: provider._id, concepts: concepts.map((concept, i) => Object.assign(concept, {id: i}))}, vehicle ? vehicleState:null)
+      const state = Object.assign({folio, total, fecha: moment(fecha).format('MM/DD/YYYY'), proveedorSelecionado: proveedor.nombre, idProveedor: proveedor._id, concepto}, vehiculo ? vehicleState:null)
       this.setState(() => state)
     }
   }
 
   handleProviderSelect = ({option}) => {
     this.checkModified()
-    const id = this.state.providerOptions.find(opt => {
+    const id = this.state.opcionesProveedor.find(opt => {
       return opt.nombre === option
     })._id
     this.setState({
-      providerID: id,
-      selectedProvider: option
+      idProveedor: id,
+      proveedorSelecionado: option
     })
   }
   handleVehicleSelect = ({option}) => {
     this.checkModified()
-    const id = this.state.vehicleOptions.find(opt => {
-      return `${opt.Modelo} ${opt.Color} ${opt.Placas}` === option
+    const id = this.state.opcionesVehiculo.find(opt => {
+      return `${opt.modelo} ${opt.color} ${opt.placas}` === option
     })._id
     this.setState({
-      vehicleID: id,
-      selectedVehicle: option
-    })
-  }
-
-  handleNewConcept = () => {
-    const lenght = this.state.concepts.length
-    let id = lenght === 0 ? 1:this.state.concepts[lenght-1].id
-    const newField = this.state.concepts.concat([{id: id + 1 , units: 0, unitType: '', description: '', unitPrice: 0, total: 0}])
-    this.setState(() => ({concepts: newField}))
-  }
-
-  handleRemoveConcept = (conceptId) => {
-    this.setState(prevState => ({concepts: prevState.concepts.filter(con => con.id !== conceptId)}))
-  }
-
-  hanldeInputChange = (e) => {
-    this.checkModified()
-    this.setState({
-      concepts: this.state.concepts.map(concept => {
-        if(''+concept.id !== e.target.id) return concept
-        return {...concept, [e.target.name]: e.target.value}
-      })
+      idVehiculo: id,
+      vehiculoSeleccionado: option
     })
   }
 
   checkModified = () => {
     if(!this.state.modified){
       this.setState({
-        modified: true
+        modificado: true
       })
     }
   }
@@ -108,24 +93,24 @@ class BillForm extends Component {
   handleDate = (e) => {
     this.checkModified()
     this.setState({
-      date: e
+      fecha: e
     })
   }
 
   fetchProviders = () => {
-    axios.get('/api/provider')
+    axios.get('/api/proveedor')
     .then(({data}) => {
       this.setState({
-        providerOptions: data
+        opcionesProveedor: data
       })
     })
   }
 
   fetchVehicles = () => {
-    axios.get('/api/vehicle')
+    axios.get('/api/vehiculo')
     .then(({data}) => {
       this.setState({
-        vehicleOptions: data
+        opcionesVehiculo: data
       })
     })
   }
@@ -133,13 +118,53 @@ class BillForm extends Component {
   handleSubmit = (e) => {
     e.preventDefault()
     const data = {
-      provider: this.state.providerID,
-      concepts: this.state.concepts,
-      total: this.getTotal(),
-      date: new Date(this.state.date)
+      folio: this.state.folio,
+      proveedor: this.state.idProveedor,
+      concepto: this.state.concepto,
+      total: this.state.total,
+      fecha: new Date(this.state.fecha),
+      alimento: this.state.isForAlimentos
     }
-    const newData = Object.assign(data, this.state.isForVehicle ? {vehicle: this.state.vehicleID}: null)
-    this.props.onSubmit.bind(this)(newData)
+    const newData = Object.assign(data, this.state.isForVehiculo ? {vehiculo: this.state.idVehiculo}: {vehiculo: null})
+    const url = this.props.method === 'post' ? this.props.url : this.props.url + '/' + this.props.billData._id
+    axios[this.props.method](url,newData)
+    .then(({data}) => {
+      if(data.errors) {
+        this.setState({
+          toastStatus: 'critical',
+          toastMessage: 'Error al guardar factura, por favor verifique los datos',
+          showToast: true
+        })
+      } else {
+        this.setState({
+          showToast: true,
+          modificado: false,
+          folio: '',
+          fecha: '',
+          proveedorSelecionado: '',
+          idProveedor: '',
+          vehiculoSeleccionado: '',
+          idVehiculo: '',
+          refacciones: '',
+          concepto: '',
+          total: 0,
+          toastStatus: 'ok',
+          toastMessage: 'Guardado con éxito',
+          isForVehiculo: false,
+          isForAlimentos: false
+        })
+        if(this.props.method === 'put'){
+          this.setState(() => ({redirect: true}))
+        }
+      }
+    })
+    .catch(err => {
+      this.setState({
+        toastStatus: 'critical',
+        toastMessage: 'Error en la aplicación',
+        showToast: true
+      })
+    })
   }
 
   handleToastClose = () => {
@@ -148,81 +173,112 @@ class BillForm extends Component {
     })
   }
 
-  handleCheckBox = () => {
-    const {Modelo, Color, Placas, _id} = this.state.vehicleOptions[0]
-    this.setState(({isForVehicle}) => ({isForVehicle: !isForVehicle, selectedVehicle: `${Modelo} ${Color} ${Placas}`, vehicleID: _id}))
+  handleCheckBox = (e) => {
+    if(e.target.name === 'checkBoxVehiculo'){
+      if(!this.state.isForVehiculo){
+        const {modelo, color, placas, _id} = this.state.opcionesVehiculo[0]
+        this.setState(() => ({vehiculoSeleccionado: `${modelo} ${color} ${placas}`, idVehiculo: _id}))
+      } else {
+        this.setState(() => ({vehiculoSeleccionado: '', idVehiculo: ''}))
+      }
+      this.setState(({isForVehiculo}) => ({isForVehiculo: !isForVehiculo}))
+    } else {
+      this.setState(({isForAlimentos}) => ({isForAlimentos: !isForAlimentos}))
+    }
   }
 
-  getTotal = () => {
-    const total = this.state.concepts.reduce((total, concept) => {
-      return total + (concept.unitPrice * concept.units)
-    }, 0)
-    return total
+  handleInputChange = (e) => {
+    this.checkModified()
+    const field = e.target.name
+    const value = e.target.value
+    this.setState(() => ({
+      [field]: value
+    }))
+  }
+
+  handleNumberChange = (e) => {
+    const field = e.target.name
+    const value = e.target.value
+    this.setState(() => ({
+      [field]: +value
+    }))
+  }
+
+  handleDelete = () => {
+    axios.delete('/api/factura/' + this.props.billData._id)
+    .then(({data}) => {
+      if(data.errors) {
+        this.setState({
+          toastStatus: 'critical',
+          toastMessage: 'Error al guardar factura, por favor verifique los datos',
+          showToast: true
+        })
+      } else {
+        this.setState(() => ({redirect: true}))
+      }
+    })
+    .catch(err => {
+      this.setState({
+        toastStatus: 'critical',
+        toastMessage: 'Error en la aplicación',
+        showToast: true
+      })
+    })
   }
 
   render(){
     return(
       <Box align='center'>
+      {this.state.redirect && <Redirect to='/facturas' />}
+        <Heading align='center'>
+            {this.props.title}
+        </Heading>
         {this.state.showToast && <Toast status={this.state.toastStatus} onClose={this.handleToastClose}>{this.state.toastMessage}</Toast>}
-        <Prompt message='No se han guardado los cambios, ¿seguro que desea salir?' when={this.state.modified}/>
+        <Prompt message='No se han guardado los cambios, ¿seguro que desea salir?' when={this.state.modificado}/>
         <Form>
             <br/>
+          <FormField label='Folio'>
+            <TextInput name='folio' onDOMChange={this.handleInputChange} value={this.state.folio}/>
+          </FormField>
           <FormField label='Proveedor'>
-            <Select options={this.state.providerOptions.map(opt => opt.nombre)} value={this.state.selectedProvider} onChange={this.handleProviderSelect} />
+            <Select options={this.state.opcionesProveedor.map(opt => opt.nombre)} value={this.state.proveedorSelecionado} onChange={this.handleProviderSelect} />
           </FormField>
           <FormField label='Fecha'>
-            <DateTime format='M/D/YYYY' onChange={this.handleDate} value={this.state.date}/>
+            <DateTime format='M/D/YYYY' onChange={this.handleDate} value={this.state.fecha}/>
           </FormField>
           <FormField>
-            <Checkbox label='Pertenece a Vehículo' checked={this.state.isForVehicle} onChange={this.handleCheckBox}/>
+            <Checkbox name='checkBoxVehiculo' label='Pertenece a Vehículo' checked={this.state.isForVehiculo} onChange={this.handleCheckBox}/>
           </FormField>
-          { this.state.isForVehicle && 
-            <FormField label='Vehículo'>
-              <Select disabled={true} options={this.state.vehicleOptions.map(opt => `${opt.Modelo} ${opt.Color} ${opt.Placas}`)} value={this.state.selectedVehicle} onChange={this.handleVehicleSelect} />
-            </FormField>
+          { this.state.isForVehiculo && 
+            <Box>
+              <FormField label='Vehículo'>
+                <Select options={this.state.opcionesVehiculo.map(opt => `${opt.modelo} ${opt.color} ${opt.placas}`)} value={this.state.vehiculoSeleccionado} onChange={this.handleVehicleSelect} />
+              </FormField>
+              <FormField label='Refacciones Adquiridas'>
+                <TextInput name='refacciones' value={this.state.refacciones} onDOMChange={this.handleInputChange} />
+              </FormField>
+            </Box>
           }
+          <FormField>
+            <Checkbox name='checkBoxAlimentos' label='Pertenece a Alimentos' checked={this.state.isForAlimentos} onChange={this.handleCheckBox}/>
+          </FormField>
           <br/>
-          {this.state.concepts.map(fieldSet => {
-            return (
-              <div key={fieldSet.id}> 
-                <Columns size={'small'} justify='between'>
-                  <Title>{'Concepto '}</Title>
-                  <Box align='end'>
-                    <Button onClick={() => this.handleRemoveConcept(fieldSet.id)}>
-                      <CloseIcon />
-                    </Button>
-                  </Box>
-                </Columns>
-                <br/>
-                <Columns size={'small'} justify='between' >
-                  <FormField label='Cantidad' >
-                    <NumberInput value={fieldSet.units} id={'' + fieldSet.id} name='units' onChange={this.hanldeInputChange}/>
-                  </FormField>
-                  <FormField label='Unidad de Medida'>
-                    <TextInput value={fieldSet.unitType} id={'' + fieldSet.id} name='unitType' onDOMChange={this.hanldeInputChange}/>
-                  </FormField>
-                </Columns>
-                <FormField label='descripcion' >
-                  <TextInput value={fieldSet.description} id={'' + fieldSet.id} name='description' onDOMChange={this.hanldeInputChange} />
-                </FormField>
-                <FormField label='Precio Unitario'>
-                  <NumberInput value={fieldSet.unitPrice} id={'' + fieldSet.id} name='unitPrice' onChange={this.hanldeInputChange}/>
-                </FormField>
-                <FormField label={'Importe ' + (fieldSet.unitPrice * fieldSet.units)}> 
-                </FormField>
-                <br/>
-              </div>
-            )
-          })}
-          <Button onClick={this.handleNewConcept} label='Agregar Concepto' />
+          <FormField label='Concepto'>
+            <TextInput name='concepto' onDOMChange={this.handleInputChange} value={this.state.concepto}/>
+          </FormField>
+          <FormField label='Total'>
+            <NumberInput name='total' value={this.state.total} onChange={this.handleNumberChange}/>
+          </FormField>
           <br/><br/>
-          <Title>{'Total: ' + this.getTotal()}</Title>
-          <Footer pad={{"vertical": "medium"}}>
-            <Button label='Guardar'
+          <Footer justify='between' pad={{"vertical": "medium"}}>
+            <Button
+              icon={<SaveIcon/>}
+              label='Guardar'
               type='submit'
               primary={true}
               onClick={this.handleSubmit}
             />
+            {this.props.method === 'put' && <Button type='button' icon={<CloseIcon/>} label='Eliminar' onClick={this.handleDelete}/>}
           </Footer>
         </Form>
       </Box>
@@ -231,7 +287,8 @@ class BillForm extends Component {
 }
 
 BillForm.propTypes = {
-  onSubmit: PropTypes.func.isRequired
+  method: PropTypes.string.isRequired,
+  url: PropTypes.string.isRequired
 }
 
 export default BillForm

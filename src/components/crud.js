@@ -14,6 +14,11 @@ import FormField from 'grommet/components/FormField'
 import TextInput from 'grommet/components/TextInput'
 import Title from 'grommet/components/Title'
 
+import CloseIcon from 'grommet/components/icons/base/Close'
+import SaveIcon from 'grommet/components/icons/base/Save'
+import AddIcon from 'grommet/components/icons/base/AddCircle'
+import Edit from 'grommet/components/icons/base/Edit'
+
 import axios from 'axios'
 
 class Crud extends Component {
@@ -183,15 +188,15 @@ class Crud extends Component {
               ))}
               <br/>
               <Footer justify='between'>
-                <Button type='submit' label='Guardar' onClick={this.handleSubmit}/>
-                { this.state.layerMode === 'edit' && <Button type='button' style={{borderColor: 'red', boxShadow: 'none'}} label='Eliminar' onClick={this.handleDelete}/>}
+                <Button icon={<SaveIcon/>} type='submit' label='Guardar' onClick={this.handleSubmit}/>
+                { this.state.layerMode === 'edit' && <Button icon={<CloseIcon/>} type='button' style={{borderColor: 'red', boxShadow: 'none'}} label='Eliminar' onClick={this.handleDelete}/>}
               </Footer>
               {this.state.submitErrors && <Title>Error al registrar</Title>}
             </Form>
           </Layer>
         }
         <Heading>{this.props.resourcePlural || this.props.resourceAlias}</Heading>
-        <Button label={'Agregar ' + this.props.resourceAlias || this.props.resource}  onClick={this.handleNewElement}/>
+        <Button icon={<AddIcon/>} label={'Agregar ' + this.props.resourceAlias || this.props.resource}  onClick={this.handleNewElement}/>
         <Table>
           <thead>
             <tr>
@@ -210,7 +215,7 @@ class Crud extends Component {
                   {this.props.fields.map((f, i) => (
                     <td key={i}> {element[f]} </td>
                   ))}
-                  <td><Button label='editar' onClick={() => this.handleEdit(element) } /></td>
+                  <td><Button icon={<Edit/>} label='editar' onClick={() => this.handleEdit(element) } /></td>
                 </TableRow>
               )
             })}
