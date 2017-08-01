@@ -22,7 +22,6 @@ import NewBill from './components/newBill'
 import Providers from './components/providers'
 import Login from './components/login'
 import Vehicles from './components/vehicles'
-import ViewBill from './components/viewBill'
 import EditBill from './components/editBill'
 import Users from './components/users'
 
@@ -147,7 +146,6 @@ export default class AppReact extends Component {
               <Route exact path='/alta' component={NewBill} />
               <Route exact path='/proveedores' component={Providers} />
               <Route exact path='/vehiculos' component={Vehicles} />
-              <Route path='/factura/:id' render={(props) => <ViewBill {...props} handleShowToast={(status, message) => this.handleShowToast(status, message)}/> } />
               <Route path='/editarFactura/:id' component={EditBill} />
               <PrivateRoute path='/users' component={Users} />
             </Box>
