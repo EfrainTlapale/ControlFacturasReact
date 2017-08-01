@@ -24,6 +24,7 @@ import Login from './components/login'
 import Vehicles from './components/vehicles'
 import EditBill from './components/editBill'
 import Users from './components/users'
+import LogBookVehicles from './components/logBookVehicles'
 
 import decode from 'jwt-decode'
 
@@ -40,7 +41,7 @@ const loggedin = () => {
 
 const PrivateRoute = ({ component: Component, ...rest }) => (
   <Route {...rest} render={props => (
-    decode(localStorage.getItem('jwt'))._doc.role === 'director' ? (
+    decode(localStorage.getItem('jwt'))._doc.rol === 'director' ? (
       <Component {...props}/>
     ) : (
       <Redirect to={{
@@ -88,7 +89,7 @@ export default class AppReact extends Component {
     let username
     let role
     if(jwt){
-      role =decode(jwt)._doc.role 
+      role =decode(jwt)._doc.rol
       username =decode(jwt)._doc.nombre 
     }
     return (
@@ -121,6 +122,12 @@ export default class AppReact extends Component {
                   <NavLink exact to='/vehiculos' style={navTextStyle}>
                       <span>Vehículos</span>
                   </NavLink>
+                  <NavLink exact to='/bitacora/vehiculos' style={navTextStyle}>
+                      <span>Bitácora Vehículos</span>
+                  </NavLink>
+                   <NavLink exact to='/bitacora/alimentos' style={navTextStyle}>
+                      <span>Bitácora Alimentos</span>
+                  </NavLink>
                   {role === 'director' && <NavLink exact to='/users' style={navTextStyle}>
                       <span>Usuarios</span>
                   </NavLink>}
@@ -147,6 +154,7 @@ export default class AppReact extends Component {
               <Route exact path='/proveedores' component={Providers} />
               <Route exact path='/vehiculos' component={Vehicles} />
               <Route path='/editarFactura/:id' component={EditBill} />
+              <Route exact path='/bitacora/vehiculos' component={LogBookVehicles} />
               <PrivateRoute path='/users' component={Users} />
             </Box>
           </Split>
